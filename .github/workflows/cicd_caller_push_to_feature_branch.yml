@@ -39,9 +39,9 @@ jobs:
                     file.split('/')[:-1]
                   )
                 )
-          print(paths_to_be_used)
+          print(f'Updated Terraform paths: {paths_to_be_used}')
           with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
-            f.write(f"updated_tf_dirs={'\n'.join(paths_to_be_used)}")
+            f.write(f"updated_tf_dirs={' '.join(paths_to_be_used)}")
           # for file in ${ALL_CHANGED_FILES}; do
           #   echo "$file was changed"
           # done
@@ -50,7 +50,7 @@ jobs:
         id: output-matrix
         env:
           UPDATED_TF_DIRS: ${{ steps.list-updated-tf-dirs.outputs.updated_tf_dirs }}
-        run: echo "::set-output name=matrix::$(echo ${UPDATED_TF_DIRS} | jq -R -s -c 'split("\n")')"
+        run: echo "::set-output name=matrix::$(echo ${UPDATED_TF_DIRS} | jq -R -s -c 'split(" ")')"
   check:
     needs: changed-files
     runs-on: ubuntu-latest
