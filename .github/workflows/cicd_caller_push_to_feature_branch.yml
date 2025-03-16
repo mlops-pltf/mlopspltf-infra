@@ -67,7 +67,6 @@ jobs:
   terraform-tasks:
     needs:
       - terraform-required-check
-      - changed-files
     runs-on: ubuntu-latest
     strategy:
         matrix:
