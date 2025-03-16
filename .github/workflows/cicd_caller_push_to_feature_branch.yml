@@ -62,6 +62,7 @@ jobs:
             # raise Exception('No terraform changes are found')
             sys.exit(1)
           else:
+            paths_to_be_used = list(set(paths_to_be_used))
             print(f'Updated Terraform paths: {paths_to_be_used}')
             with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
               f.write(f"updated_tf_dirs={paths_to_be_used}\n")
@@ -108,6 +109,8 @@ jobs:
           target_branch_name = os.environ['GITHUB_REF_NAME']
           print(f"Github Event Name: {github_event_name}")
           print(f"Target Branch Name: {target_branch_name}")
+
+          print(os.environ)
 
           with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
             if github_event_name == 'pull_request':
