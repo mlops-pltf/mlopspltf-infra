@@ -64,6 +64,3 @@ jobs:
         id: tf-fmt-check
         run: |
           cat ${GITHUB_OUTPUT}
-          # echo "${{ fromJson(needs.changed-files.outputs['output-matrix'].matrix) }}"
-          # echo "Found Update terrafomr directory - ${{ matrix.updated_tf_dir }}"
-          # ls ${{ matrix.updated_tf_dir }}
