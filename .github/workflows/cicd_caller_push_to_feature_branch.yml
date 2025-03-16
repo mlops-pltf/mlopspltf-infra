@@ -106,11 +106,13 @@ jobs:
         run: |
           import os
           github_event_name = os.environ['GITHUB_EVENT_NAME']
-          target_branch_name = os.environ['GITHUB_REF_NAME']
+          if github_event_name == 'pull_request':
+            target_branch_name = os.environ['GITHUB_BASE_REF']
+          elif github_event_name == 'push':
+            target_branch_name = os.environ['GITHUB_REF_NAME']
+
           print(f"Github Event Name: {github_event_name}")
           print(f"Target Branch Name: {target_branch_name}")
-
-          print(os.environ)
 
           with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
             if github_event_name == 'pull_request':
