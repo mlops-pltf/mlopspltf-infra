@@ -1,8 +1,8 @@
 name: Push To Feature Branch
 on:
-  pull_request:
-    branches:
-      - develop
+  # pull_request:
+  #   branches:
+  #     - develop
   push:
     branches:
       - feature/*
@@ -148,6 +148,7 @@ jobs:
         if: ${{ contains(steps.detect-env-and-set-env-vars.outputs.action_type, 'validation') }}
         working-directory: ${{ matrix.updated_tf_dir}}
         run: |
+          echo "arn:aws:iam::${{ steps.detect-env-and-set-env-vars.outputs.target_aws_account_id }}:role/mlopspltf-${{ steps.detect-env-and-set-env-vars.outputs.target_env }}-iam-github-role"
           terraform fmt -check
 
       - name: Configure AWS Credentials
