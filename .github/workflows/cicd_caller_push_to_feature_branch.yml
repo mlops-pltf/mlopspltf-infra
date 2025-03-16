@@ -98,6 +98,13 @@ jobs:
           terraform_version: 1.0.1
           terraform_wrapper: false
 
+      - name: Detect Environment and Set Environent Variables
+        id: detect-env-and-set-env-vars
+        run: |
+          import os
+          print(os.environ)
+        shell: python
+
       - name: Terraform Format Check
         id: tf-fmt-check
         working-directory: ${{ matrix.updated_tf_dir}}
