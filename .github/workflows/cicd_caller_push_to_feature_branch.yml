@@ -130,11 +130,9 @@ jobs:
         working-directory: ${{ matrix.updated_tf_dir}}
         run: |
           echo ${{ steps.detect-env-and-set-env-vars.outputs.action_type }}
-          echo ${{ steps.detect-env-and-set-env-vars.outputs.backend_config_file }}
-          echo ${{ steps.detect-env-and-set-env-vars.outputs.env_specific_param_file }}
           terraform fmt -check
 
-      - name: Terraform Format Check
+      - name: Terraform Format Check - 1
         id: tf-fmt-check-1
         if: ${{ contains(steps.detect-env-and-set-env-vars.outputs.action_type, 'validation_and_deployment') }}
         working-directory: ${{ matrix.updated_tf_dir}}
@@ -144,7 +142,7 @@ jobs:
           echo ${{ steps.detect-env-and-set-env-vars.outputs.env_specific_param_file }}
           terraform fmt -check
 
-      - name: Terraform Format Check
+      - name: Terraform Format Check - 2
         id: tf-fmt-check-2
         if: ${{ steps.detect-env-and-set-env-vars.outputs.action_type == 'validation_and_deployment' }}
         working-directory: ${{ matrix.updated_tf_dir}}
