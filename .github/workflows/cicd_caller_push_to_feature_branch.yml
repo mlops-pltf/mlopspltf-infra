@@ -174,3 +174,60 @@ jobs:
         working-directory: ${{ matrix.updated_tf_dir}}
         run: |
           terraform plan -var-file="${{ steps.detect-env-and-set-env-vars.outputs.env_specific_param_file }}"
+    outputs:
+      action_type: ${{ steps.detect-env-and-set-env-vars.outputs.action_type }}
+      target_env: ${{ steps.detect-env-and-set-env-vars.outputs.target_env }}
+      target_account_id: ${{ steps.detect-env-and-set-env-vars.outputs.target_account_id }}
+      sts_role_to_assume: ${{ steps.detect-env-and-set-env-vars.outputs.sts_role_to_assume }}
+      backend_config_file: ${{ steps.detect-env-and-set-env-vars.outputs.backend_config_file }}
+      env_specific_param_file: ${{ steps.detect-env-and-set-env-vars.outputs.env_specific_param_file }}
+
+  manual-approval-before-deployment:
+    needs:
+      - terraform-tasks
+    if: needs.terraform-tasks.outputs.action_type == 'validation_and_deployment'
+    uses: ./.github/workflows/approval.yml
+
+  terraform-apply:
+    name: Execute Terraform Apply
+    needs:
+      - changed-files
+      - terraform-tasks
+      - manual-approval-before-deployment
+    permissions:
+      id-token: write
+      contents: read
+    runs-on: ubuntu-latest
+    strategy:
+        matrix:
+            updated_tf_dir: ${{ fromJson(needs.changed-files.outputs.updated_tf_dirs) }}
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v1
+        with:
+          terraform_version: 1.0.1
+          terraform_wrapper: false
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          audience: sts.amazonaws.com
+          aws-region: us-east-1
+          role-to-assume: ${{ needs.terraform-tasks.outputs.sts_role_to_assume }}
+
+      - name: Terraform Init
+        id: tf-init
+        if: ${{ contains(needs.terraform-tasks.outputs.action_type, 'validation_and_deployment') }}
+        working-directory: ${{ matrix.updated_tf_dir}}
+        run: |
+          terraform init -backend-config="${{ needs.terraform-tasks.outputs.backend_config_file }}"
+
+      - name: Terraform Apply
+        id: tf-apply
+        if: ${{ contains(needs.terraform-tasks.outputs.action_type, 'validation_and_deployment') }}
+        working-directory: ${{ matrix.updated_tf_dir}}
+        run: |
+          terraform apply -var-file="${{ needs.terraform-tasks.outputs.env_specific_param_file }}" -auto-approve
+
