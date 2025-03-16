@@ -92,8 +92,17 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v1
+        with:
+          terraform_version: 1.0.1
+          terraform_wrapper: false
+
       - name: Terraform Format Check
         id: tf-fmt-check
         working-directory: ${{ matrix.updated_tf_dir}}
         run: |
+          echo "${{ github.ref }}"
+          echo "${{ github.event_name }}"
+          echo "${{ github.event }}"
           terraform fmt -check
