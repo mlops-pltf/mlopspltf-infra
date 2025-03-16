@@ -117,13 +117,7 @@ jobs:
           print(f"Github Event Name: {github_event_name}")
           print(f"Target Branch Name: {target_branch_name}")
 
-          with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
-            if github_event_name == 'pull_request':
-              action_type = 'validation'
-            elif github_event_name == 'push':
-              action_type = 'validation_and_deployment'
-            f.write(f'action_type="{action_type}"\n')
-          
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as f:          
             if target_branch_name.startswith('feature/'):
               target_env = 'dev'
               target_aws_account_id = 284963279238
@@ -132,10 +126,19 @@ jobs:
               target_aws_account_id = 284963279238
             elif target_branch_name == 'main':
               target_env = 'prd'
-              target_aws_account_id = 284963279238
+              target_aws_account_id = 928765701029
+            
+            if github_event_name == 'pull_request':
+              action_type = 'validation'
+              sts_role_to_assume = f'arn:aws:iam::{target_aws_account_id}:role/mlopspltf-{target_env}-iam-github-pr-role'
+            elif github_event_name == 'push':
+              action_type = 'validation_and_deployment'
+              sts_role_to_assume = f'arn:aws:iam::{target_aws_account_id}:role/mlopspltf-{target_env}-iam-github-role'
+            f.write(f'action_type="{action_type}"\n')
 
             f.write(f'target_env={target_env}\n')
             f.write(f'target_aws_account_id={target_aws_account_id}\n')
+            f.write(f'sts_role_to_assume={sts_role_to_assume}\n')
             f.write(f'backend_config_file="../backend_configs/{target_env}.config"\n')
             f.write(f'env_specific_param_file="../env_specific_vars/{target_env}.tfvars"')
 
@@ -148,7 +151,7 @@ jobs:
         if: ${{ contains(steps.detect-env-and-set-env-vars.outputs.action_type, 'validation') }}
         working-directory: ${{ matrix.updated_tf_dir}}
         run: |
-          echo "arn:aws:iam::${{ steps.detect-env-and-set-env-vars.outputs.target_aws_account_id }}:role/mlopspltf-${{ steps.detect-env-and-set-env-vars.outputs.target_env }}-iam-github-role"
+          echo "${{ steps.detect-env-and-set-env-vars.outputs.sts_role_to_assume }}"
           terraform fmt -check
 
       - name: Configure AWS Credentials
@@ -156,7 +159,7 @@ jobs:
         with:
           audience: sts.amazonaws.com
           aws-region: us-east-1
-          role-to-assume: arn:aws:iam::${{ steps.detect-env-and-set-env-vars.outputs.target_aws_account_id }}:role/mlopspltf-${{ steps.detect-env-and-set-env-vars.outputs.target_env }}-iam-github-role
+          role-to-assume: ${{ steps.detect-env-and-set-env-vars.outputs.sts_role_to_assume }}
 
       - name: Terraform Init
         id: tf-init
