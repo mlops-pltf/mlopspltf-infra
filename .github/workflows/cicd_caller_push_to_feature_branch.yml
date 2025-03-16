@@ -114,9 +114,9 @@ jobs:
           
             if target_brach_name.startswith('feature/'):
               target_env = 'dev'
-            elif target_brach_name = 'develop':
+            elif target_brach_name == 'develop':
               target_env = 'tst'
-            elif target_brach_name = 'main':
+            elif target_brach_name == 'main':
               target_env = 'prd'
             f.write(f'backend_config_file="../backend_configs/{target_env}.config"\n')
             f.write(f'env_specific_param_file="../env_specific_vars/{target_env}.tfvars"')
