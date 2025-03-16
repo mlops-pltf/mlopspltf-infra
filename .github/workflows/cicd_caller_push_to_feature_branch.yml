@@ -42,7 +42,7 @@ jobs:
                 )
           if len(paths_to_be_used) == 0:
             print('This commit does not contain any Terraform related changes. We will not move further.')
-            raise Exception('No terraform chag=nges are found')
+            raise Exception('No terraform changes are found')
             sys.exit(1)
           else:
             print(f'Updated Terraform paths: {paths_to_be_used}')
@@ -52,9 +52,14 @@ jobs:
     outputs:
       status: ${{ job.status}}
       updated_tf_dirs: ${{ steps.list-updated-tf-dirs.outputs.updated_tf_dirs }}
-  check:
+  terraform-required-check:
     needs: changed-files
     if: needs.changed-files.outputs.status == 'success'
+    runs-on: ubuntu-latest
+  terraform-tasks:
+    needs:
+      - terraform-required-check
+      - changed-files
     runs-on: ubuntu-latest
     strategy:
         matrix:
