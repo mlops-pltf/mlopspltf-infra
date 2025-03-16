@@ -14,16 +14,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Get changed files
-        id: changed-files
+      - name: Get All Changed Files
+        id: get-all-changed-files
         uses: tj-actions/changed-files@v45
         # To compare changes between the current commit and the last pushed remote commit set `since_last_remote_commit: true`. e.g
         # with:
           # since_last_remote_commit: true
 
-      - name: List all changed files
+      - name: List Updated Terraform Directories
+        id: list-updated-tf-dirs
         env:
-          ALL_CHANGED_FILES: ${{ steps.changed-files.outputs.all_changed_files }}
+          ALL_CHANGED_FILES: ${{ steps.get-all-changed-files.outputs.all_changed_files }}
         shell: python
         run: |
           import os
@@ -39,6 +40,13 @@ jobs:
                   )
                 )
           print(paths_to_be_used)
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
+            f.write(f"updated_tf_dirs={' '.join(paths_to_be_used)}")
           # for file in ${ALL_CHANGED_FILES}; do
           #   echo "$file was changed"
           # done
+      - name: List all changed files
+        env:
+          UPDATED_TF_DIRS: ${{ steps.list-updated-tf-dirs.outputs.updated_tf_dirs }}
+        shell: python
+        run: |
