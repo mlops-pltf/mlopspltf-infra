@@ -57,11 +57,12 @@ jobs:
       updated_tf_dirs: ${{ steps.list-updated-tf-dirs.outputs.updated_tf_dirs }}
   terraform-required-check:
     needs: changed-files
-    if: needs.changed-files.outputs.terraform_required_flag == 'Y'
+    # if: needs.changed-files.outputs.terraform_required_flag == 'Y'
     runs-on: ubuntu-latest
     steps:
       - name: Extracted Terraform Directories
         run: |
+          echo ${{ needs.changed-files.outputs.terraform_required_flag }}
           echo ${{ needs.changed-files.outputs.updated_tf_dirs }}
   terraform-tasks:
     needs:
