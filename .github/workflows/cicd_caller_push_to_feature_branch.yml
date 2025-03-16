@@ -49,7 +49,7 @@ jobs:
           else:
             print(f'Updated Terraform paths: {paths_to_be_used}')
             with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
-              f.write(f"updated_tf_dirs={paths_to_be_used}")
+              f.write(f"updated_tf_dirs={paths_to_be_used}\n")
               f.write(f"terraform_required_flag=Y")
         continue-on-error: true
     outputs:
@@ -57,7 +57,7 @@ jobs:
       updated_tf_dirs: ${{ steps.list-updated-tf-dirs.outputs.updated_tf_dirs }}
   terraform-required-check:
     needs: changed-files
-    # if: needs.changed-files.outputs.terraform_required_flag == 'Y'
+    if: needs.changed-files.outputs.terraform_required_flag == 'Y'
     runs-on: ubuntu-latest
     steps:
       - name: Extracted Terraform Directories
