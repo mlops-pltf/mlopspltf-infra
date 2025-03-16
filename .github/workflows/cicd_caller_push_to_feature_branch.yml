@@ -30,10 +30,14 @@ jobs:
           changed_file = os.environ['ALL_CHANGED_FILES']
           print(changed_file)
           paths_to_be_used = list()
-          for file in changed_file.split('\n'):
+          for file in changed_file.split(' '):
             if file.endswith('.tf'):
-              if file not in paths_to_be_used:
-                paths_to_be_used.append(file)
+              if file not in paths_to_be_used
+                paths_to_be_used.append(
+                  '/'.join(
+                    file.split('/')[-1]
+                  )
+                )
           print(paths_to_be_used)
           # for file in ${ALL_CHANGED_FILES}; do
           #   echo "$file was changed"
