@@ -1,13 +1,13 @@
 name: Push To Feature Branch
 on:
+  pull_request:
+    branches:
+      - develop
   push:
     branches:
       - feature/*
   workflow_dispatch:
 jobs:
-  # ------------------------------------------------------------------------------------------------------------------------------------------------
-  # Event `pull_request`: Compare the last commit of the main branch or last remote commit of the PR branch -> to the current commit of a PR branch.
-  # ------------------------------------------------------------------------------------------------------------------------------------------------
   changed-files:
     runs-on: ubuntu-latest  # windows-latest || macos-latest
     name: Find Updated Terraform Directories
@@ -70,6 +70,7 @@ jobs:
     outputs:
       terraform_required_flag: ${{ steps.list-updated-tf-dirs.outputs.terraform_required_flag }}
       updated_tf_dirs: ${{ steps.list-updated-tf-dirs.outputs.updated_tf_dirs }}
+
   terraform-required-check:
     name: Decide if Terraform Steps need to be executed
     needs: changed-files
@@ -80,6 +81,7 @@ jobs:
         run: |
           echo ${{ needs.changed-files.outputs.terraform_required_flag }}
           echo ${{ needs.changed-files.outputs.updated_tf_dirs }}
+
   terraform-tasks:
     name: Execute Terraform Steps
     needs:
