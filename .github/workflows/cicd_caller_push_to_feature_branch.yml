@@ -45,12 +45,8 @@ jobs:
           # for file in ${ALL_CHANGED_FILES}; do
           #   echo "$file was changed"
           # done
-
-      - name: Output Matrix With Updated TF Dirs
-        id: output-matrix
-        env:
-          UPDATED_TF_DIRS: ${{ steps.list-updated-tf-dirs.outputs.updated_tf_dirs }}
-        run: echo "::set-output name=matrix::$(echo ${UPDATED_TF_DIRS} | jq -R -s -c 'split(" ")')"
+    outputs:
+      updated_tf_dirs: ${{ steps.list-updated-tf-dirs.outputs.updated_tf_dirs }}
   check:
     needs: changed-files
     runs-on: ubuntu-latest
@@ -62,5 +58,7 @@ jobs:
 
       - name: Terraform Format Check
         id: tf-fmt-check
+        env:
+          updated_tf_dirs: ${{needs.changed-files.outputs.updated_tf_dirs}}
         run: |
-          cat ${GITHUB_OUTPUT}
+          cat ${updated_tf_dirs}
