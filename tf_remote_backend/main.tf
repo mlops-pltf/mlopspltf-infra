@@ -1,9 +1,9 @@
 terraform {
-#   #############################################################
-#   ## AFTER RUNNING TERRAFORM APPLY (WITH LOCAL BACKEND)
-#   ## YOU WILL UNCOMMENT THIS CODE THEN RERUN TERRAFORM INIT
-#   ## TO SWITCH FROM LOCAL BACKEND TO REMOTE AWS BACKEND
-#   #############################################################
+  #   #############################################################
+  #   ## AFTER RUNNING TERRAFORM APPLY (WITH LOCAL BACKEND)
+  #   ## YOU WILL UNCOMMENT THIS CODE THEN RERUN TERRAFORM INIT
+  #   ## TO SWITCH FROM LOCAL BACKEND TO REMOTE AWS BACKEND
+  #   #############################################################
   backend "s3" {
     bucket         = ""
     key            = "mlopspltf_infra/tf_remote_backend/terraform.tfstate"
@@ -21,13 +21,13 @@ terraform {
 }
 
 provider "aws" {
-  region = "us-east-1"
+  region              = "us-east-1"
   allowed_account_ids = ["${var.allowed_account_id}"]
 }
 
 locals {
-    tf_remote_backend_bucket_name = "${var.tf_remote_backend_bucket_name}"
-    tf_remote_backend_ddb_table_name = "${var.tf_remote_backend_ddb_table_name}"
+  tf_remote_backend_bucket_name    = var.tf_remote_backend_bucket_name
+  tf_remote_backend_ddb_table_name = var.tf_remote_backend_ddb_table_name
 }
 
 resource "aws_s3_bucket" "tf_remote_backend_bucket" {
@@ -43,7 +43,7 @@ resource "aws_s3_bucket_versioning" "tf_remote_backend_bucket_versioning" {
 }
 
 resource "aws_s3_bucket_server_side_encryption_configuration" "tf_remote_backend_bucket_crypto_conf" {
-  bucket = aws_s3_bucket.tf_remote_backend_bucket.bucket 
+  bucket = aws_s3_bucket.tf_remote_backend_bucket.bucket
   rule {
     apply_server_side_encryption_by_default {
       sse_algorithm = "AES256"

@@ -1,0 +1,249 @@
+name: Push To Feature Branch
+on:
+  pull_request:
+    branches:
+      - develop
+  push:
+    branches:
+      - feature/*
+  workflow_dispatch:
+jobs:
+  changed-files:
+    runs-on: ubuntu-latest  # windows-latest || macos-latest
+    name: Find Updated Terraform Directories
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Get All Changed Files
+        id: get-all-changed-files
+        uses: tj-actions/changed-files@v45
+        # To compare changes between the current commit and the last pushed remote commit set `since_last_remote_commit: true`. e.g
+        # with:
+          # since_last_remote_commit: true
+
+      - name: Prevent Changes in Remote Backend Config Files
+        id: prevent-changes-remote-backend-configs
+        env:
+          ALL_CHANGED_FILES: ${{ steps.get-all-changed-files.outputs.all_changed_files }}
+        shell: python
+        run: |
+          import os
+          import sys
+          changed_file = os.environ['ALL_CHANGED_FILES']
+          print(f"Updated/Added files: {changed_file}")
+          for file in changed_file.split(' '):
+            if file.startswith('backend_configs'):
+              print(f"Changes in backend_configs are not allowed. Please reach out to Administrator (Saumalya Sarkar).")
+              sys.exit(1)
+
+      - name: List Updated Terraform Directories
+        id: list-updated-tf-dirs
+        env:
+          ALL_CHANGED_FILES: ${{ steps.get-all-changed-files.outputs.all_changed_files }}
+        shell: python
+        run: |
+          import os
+          import sys
+          changed_file = os.environ['ALL_CHANGED_FILES']
+          print(changed_file)
+          paths_to_be_used = list()
+          for file in changed_file.split(' '):
+            if file.endswith('.tf'):
+              if file not in paths_to_be_used:
+                paths_to_be_used.append(
+                  '/'.join(
+                    file.split('/')[:-1]
+                  )
+                )
+          if len(paths_to_be_used) == 0:
+            print('This commit does not contain any Terraform related changes. We will not move further.')
+            with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
+              f.write(f"terraform_required_flag=N")
+            # raise Exception('No terraform changes are found')
+            sys.exit(1)
+          else:
+            paths_to_be_used = list(set(paths_to_be_used))
+            print(f'Updated Terraform paths: {paths_to_be_used}')
+            with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
+              f.write(f"updated_tf_dirs={paths_to_be_used}\n")
+              f.write(f"terraform_required_flag=Y")
+        continue-on-error: true
+    outputs:
+      terraform_required_flag: ${{ steps.list-updated-tf-dirs.outputs.terraform_required_flag }}
+      updated_tf_dirs: ${{ steps.list-updated-tf-dirs.outputs.updated_tf_dirs }}
+
+  terraform-required-check:
+    name: Decide if Terraform Steps need to be executed
+    needs: changed-files
+    if: needs.changed-files.outputs.terraform_required_flag == 'Y'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Extracted Terraform Directories
+        run: |
+          echo ${{ needs.changed-files.outputs.terraform_required_flag }}
+          echo ${{ needs.changed-files.outputs.updated_tf_dirs }}
+
+  terraform-tasks:
+    name: Execute Terraform Steps
+    needs:
+      - terraform-required-check
+      - changed-files
+    permissions:
+      id-token: write
+      contents: read
+    runs-on: ubuntu-latest
+    strategy:
+        matrix:
+            updated_tf_dir: ${{ fromJson(needs.changed-files.outputs.updated_tf_dirs) }}
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v1
+        with:
+          terraform_version: 1.0.1
+          terraform_wrapper: false
+
+      - name: Detect Environment and Set Environent Variables
+        id: detect-env-and-set-env-vars
+        run: |
+          import os
+          github_event_name = os.environ['GITHUB_EVENT_NAME']
+          if github_event_name == 'pull_request':
+            target_branch_name = os.environ['GITHUB_BASE_REF']
+          elif github_event_name == 'push':
+            target_branch_name = os.environ['GITHUB_REF_NAME']
+
+          print(f"Github Event Name: {github_event_name}")
+          print(f"Target Branch Name: {target_branch_name}")
+
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as f:          
+            if target_branch_name.startswith('feature/'):
+              target_env = 'dev'
+              target_aws_account_id = 284963279238
+            elif target_branch_name == 'develop':
+              target_env = 'tst'
+              target_aws_account_id = 284963279238
+            elif target_branch_name == 'main':
+              target_env = 'prd'
+              target_aws_account_id = 928765701029
+            
+            if github_event_name == 'pull_request':
+              action_type = 'validation'
+              sts_role_to_assume = f'arn:aws:iam::{target_aws_account_id}:role/mlopspltf-{target_env}-iam-github-pr-role'
+            elif github_event_name == 'push':
+              action_type = 'validation_and_deployment'
+              sts_role_to_assume = f'arn:aws:iam::{target_aws_account_id}:role/mlopspltf-{target_env}-iam-github-role'
+            f.write(f'action_type="{action_type}"\n')
+
+            f.write(f'target_env={target_env}\n')
+            f.write(f'target_aws_account_id={target_aws_account_id}\n')
+            f.write(f'sts_role_to_assume={sts_role_to_assume}\n')
+            f.write(f'backend_config_file="../backend_configs/{target_env}.config"\n')
+            f.write(f'env_specific_param_file="../env_specific_vars/{target_env}.tfvars"')
+
+          print(f"Target Enrironment: {target_env}.")
+          print(f"Action Type: {action_type}.")
+        shell: python
+
+      - name: Terraform Format Check
+        id: tf-fmt-check
+        if: ${{ contains(steps.detect-env-and-set-env-vars.outputs.action_type, 'validation') }}
+        working-directory: ${{ matrix.updated_tf_dir}}
+        run: |
+          echo "${{ steps.detect-env-and-set-env-vars.outputs.sts_role_to_assume }}"
+          terraform fmt -check
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          audience: sts.amazonaws.com
+          aws-region: us-east-1
+          role-to-assume: ${{ steps.detect-env-and-set-env-vars.outputs.sts_role_to_assume }}
+
+      - name: Terraform Init
+        id: tf-init
+        if: ${{ contains(steps.detect-env-and-set-env-vars.outputs.action_type, 'validation') }}
+        working-directory: ${{ matrix.updated_tf_dir}}
+        run: |
+          terraform init -backend-config="${{ steps.detect-env-and-set-env-vars.outputs.backend_config_file }}"
+
+      - name: Terraform Plan
+        id: tf-plan
+        if: ${{ contains(steps.detect-env-and-set-env-vars.outputs.action_type, 'validation') }}
+        working-directory: ${{ matrix.updated_tf_dir}}
+        run: |
+          terraform plan -var-file="${{ steps.detect-env-and-set-env-vars.outputs.env_specific_param_file }}"
+    outputs:
+      action_type: ${{ steps.detect-env-and-set-env-vars.outputs.action_type }}
+      target_env: ${{ steps.detect-env-and-set-env-vars.outputs.target_env }}
+      target_account_id: ${{ steps.detect-env-and-set-env-vars.outputs.target_account_id }}
+      sts_role_to_assume: ${{ steps.detect-env-and-set-env-vars.outputs.sts_role_to_assume }}
+      backend_config_file: ${{ steps.detect-env-and-set-env-vars.outputs.backend_config_file }}
+      env_specific_param_file: ${{ steps.detect-env-and-set-env-vars.outputs.env_specific_param_file }}
+
+  expose-terraform-tasks-outputs:
+    name: Expose the outputs from Terraform-Tasks job
+    runs-on: ubuntu-latest
+    needs:
+      - terraform-tasks
+    steps:
+      - name: Show Outputs
+        run: |
+          echo ${{ needs.terraform-tasks.outputs.action_type }}
+          echo ${{ needs.terraform-tasks.outputs.target_env }}
+          echo ${{ needs.terraform-tasks.outputs.target_account_id }}
+          echo ${{ needs.terraform-tasks.outputs.sts_role_to_assume }}
+          echo ${{ needs.terraform-tasks.outputs.backend_config_file }}
+          echo ${{ needs.terraform-tasks.outputs.env_specific_param_file }}
+
+  manual-approval-before-deployment:
+    needs:
+      - terraform-tasks
+      - expose-terraform-tasks-outputs
+    if: ${{ contains(needs.terraform-tasks.outputs.action_type, 'validation_and_deployment') }}
+    uses: ./.github/workflows/approval.yml
+
+  terraform-apply:
+    name: Execute Terraform Apply
+    needs:
+      - changed-files
+      - terraform-tasks
+      - manual-approval-before-deployment
+    permissions:
+      id-token: write
+      contents: read
+    runs-on: ubuntu-latest
+    strategy:
+        matrix:
+            updated_tf_dir: ${{ fromJson(needs.changed-files.outputs.updated_tf_dirs) }}
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v1
+        with:
+          terraform_version: 1.0.1
+          terraform_wrapper: false
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          audience: sts.amazonaws.com
+          aws-region: us-east-1
+          role-to-assume: ${{ needs.terraform-tasks.outputs.sts_role_to_assume }}
+
+      - name: Terraform Init
+        id: tf-init
+        if: ${{ contains(needs.terraform-tasks.outputs.action_type, 'validation_and_deployment') }}
+        working-directory: ${{ matrix.updated_tf_dir}}
+        run: |
+          terraform init -backend-config="${{ needs.terraform-tasks.outputs.backend_config_file }}"
+
+      - name: Terraform Apply
+        id: tf-apply
+        if: ${{ contains(needs.terraform-tasks.outputs.action_type, 'validation_and_deployment') }}
+        working-directory: ${{ matrix.updated_tf_dir}}
+        run: |
+          terraform apply -var-file="${{ needs.terraform-tasks.outputs.env_specific_param_file }}" -auto-approve
+

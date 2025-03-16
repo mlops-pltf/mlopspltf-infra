@@ -1,0 +1,19 @@
+name: Approval Step
+on:
+  workflow_call:
+jobs:
+  approval:
+    runs-on: ubuntu-latest
+    if: ${{github.event_name == 'push' || github.event_name == 'pull_request'}}
+    environment: |-
+      ${{
+        github.ref_name == 'main' && 'deploy-higher-environment'
+        || github.ref_name == 'develop' && 'deploy-higher-environment'
+        || 'deploy-dev'
+      }}
+    steps:
+      - name: Dummy Step
+        run: |
+          echo "Deploy Approval"
+          echo ${{github.event_name}}
+          echo ${{github.ref_name}}
