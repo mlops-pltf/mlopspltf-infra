@@ -124,9 +124,9 @@ jobs:
             f.write(f'env_specific_param_file="../env_specific_vars/{target_env}.tfvars"')
         shell: python
 
-      - name: Terraform Format Check - 1
-        id: tf-fmt-check-1
-        if: ${{ contains(steps.detect-env-and-set-env-vars.outputs.action_type, 'validation_and_deployment') }}
+      - name: Terraform Format Check
+        id: tf-fmt-check
+        if: ${{ contains(steps.detect-env-and-set-env-vars.outputs.action_type, 'validation') }}
         working-directory: ${{ matrix.updated_tf_dir}}
         run: |
           terraform fmt -check

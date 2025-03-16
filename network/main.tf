@@ -1,9 +1,9 @@
 terraform {
-#   #############################################################
-#   ## AFTER RUNNING TERRAFORM APPLY (WITH LOCAL BACKEND)
-#   ## YOU WILL UNCOMMENT THIS CODE THEN RERUN TERRAFORM INIT
-#   ## TO SWITCH FROM LOCAL BACKEND TO REMOTE AWS BACKEND
-#   #############################################################
+  #   #############################################################
+  #   ## AFTER RUNNING TERRAFORM APPLY (WITH LOCAL BACKEND)
+  #   ## YOU WILL UNCOMMENT THIS CODE THEN RERUN TERRAFORM INIT
+  #   ## TO SWITCH FROM LOCAL BACKEND TO REMOTE AWS BACKEND
+  #   #############################################################
   backend "s3" {
     bucket         = ""
     key            = "mlopspltf_infra/network/terraform.tfstate"
@@ -21,7 +21,7 @@ terraform {
 }
 
 provider "aws" {
-  region = "us-east-1"
+  region              = "us-east-1"
   allowed_account_ids = ["${var.allowed_account_id}"]
 }
 
@@ -30,8 +30,8 @@ resource "aws_vpc" "main" {
   instance_tenancy = "default"
 
   tags = {
-    Name = "mlopspltf-${var.environment}-vpc"
-    project = "MLOPSPLTF"
+    Name        = "mlopspltf-${var.environment}-vpc"
+    project     = "MLOPSPLTF"
     environment = "${var.environment}"
     jira-ticket = "MLAIHO-31"
   }
