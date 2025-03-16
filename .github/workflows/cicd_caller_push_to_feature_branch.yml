@@ -88,6 +88,9 @@ jobs:
     needs:
       - terraform-required-check
       - changed-files
+    permissions:
+      id-token: write
+      contents: read
     runs-on: ubuntu-latest
     strategy:
         matrix:
