@@ -55,7 +55,10 @@ jobs:
   terraform-required-check:
     needs: changed-files
     if: needs.changed-files.outputs.status == 'success'
-    uses: ./.github/workflows/approval.yml
+    runs-on: ubuntu-latest
+    steps:
+      - name: Extracted Terraform Directories
+        run: echo ${{ needs.changed-files.outputs.updated_tf_dirs }}
   terraform-tasks:
     needs:
       - terraform-required-check
