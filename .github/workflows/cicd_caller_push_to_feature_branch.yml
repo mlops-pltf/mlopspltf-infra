@@ -156,7 +156,7 @@ jobs:
         with:
           audience: sts.amazonaws.com
           aws-region: us-east-1
-          role-to-assume: "arn:aws:iam::${{ steps.detect-env-and-set-env-vars.outputs.target_aws_account_id }}:role/mlopspltf-${{ steps.detect-env-and-set-env-vars.outputs.target_env }}-iam-github-role"
+          role-to-assume: arn:aws:iam::${{ steps.detect-env-and-set-env-vars.outputs.target_aws_account_id }}:role/mlopspltf-${{ steps.detect-env-and-set-env-vars.outputs.target_env }}-iam-github-role
 
       - name: Terraform Init
         id: tf-init
