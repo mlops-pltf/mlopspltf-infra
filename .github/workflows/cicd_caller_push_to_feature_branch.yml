@@ -79,5 +79,4 @@ jobs:
         id: tf-fmt-check
         working-directory: ${{ matrix.updated_tf_dir}}
         run: |
-          pwd
           terraform fmt -check
