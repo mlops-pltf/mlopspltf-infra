@@ -56,7 +56,7 @@ jobs:
       terraform_required_flag: ${{ steps.list-updated-tf-dirs.outputs.terraform_required_flag }}
       updated_tf_dirs: ${{ steps.list-updated-tf-dirs.outputs.updated_tf_dirs }}
   terraform-required-check:
-    name: Decide if Terraform Steps needs to be executed
+    name: Decide if Terraform Steps need to be executed
     needs: changed-files
     if: needs.changed-files.outputs.terraform_required_flag == 'Y'
     runs-on: ubuntu-latest
