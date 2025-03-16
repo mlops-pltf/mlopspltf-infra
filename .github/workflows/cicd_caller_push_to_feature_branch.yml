@@ -129,8 +129,10 @@ jobs:
         if: ${{ contains(steps.detect-env-and-set-env-vars.outputs.action_type, 'validation_and_deployment') }}
         working-directory: ${{ matrix.updated_tf_dir}}
         run: |
+          echo "Test String - 1"
           echo ${{ steps.detect-env-and-set-env-vars.outputs.action_type }}
-          terraform fmt -check
+          echo "Test String - 2"
+          # terraform fmt -check
 
       - name: Terraform Format Check - 1
         id: tf-fmt-check-1
