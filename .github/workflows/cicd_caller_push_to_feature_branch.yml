@@ -41,7 +41,7 @@ jobs:
                 )
           print(f'Updated Terraform paths: {paths_to_be_used}')
           with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
-            f.write(f"updated_tf_dirs={' '.join(paths_to_be_used)}")
+            f.write(f"updated_tf_dirs={paths_to_be_used}")
           # for file in ${ALL_CHANGED_FILES}; do
           #   echo "$file was changed"
           # done
@@ -50,9 +50,9 @@ jobs:
   check:
     needs: changed-files
     runs-on: ubuntu-latest
-    # strategy:
-    #     matrix:
-    #         updated_tf_dir: ${{ fromJson(needs.changed-files.outputs['output-matrix'].matrix) }}
+    strategy:
+        matrix:
+            updated_tf_dir: ${{ fromJson(needs.changed-files.outputs.updated_tf_dirs) }}
     steps:
       - uses: actions/checkout@v2
 
@@ -61,4 +61,4 @@ jobs:
         env:
           updated_tf_dirs: ${{needs.changed-files.outputs.updated_tf_dirs}}
         run: |
-          cat ${updated_tf_dirs}
+          echo ${updated_tf_dirs}
