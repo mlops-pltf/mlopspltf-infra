@@ -104,6 +104,8 @@ jobs:
           import os
           github_event_name = os.environ['GITHUB_EVENT_NAME']
           target_branch_name = os.environ['GITHUB_REF_NAME']
+          print(f"Github Event Name: {github_event_name}")
+          print(f"Target Branch Name: {target_branch_name}")
 
           with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
             if github_event_name == 'pull_request':
@@ -124,7 +126,10 @@ jobs:
 
       - name: Terraform Format Check
         id: tf-fmt-check
-        if: steps.detect-env-and-set-env-vars.outputs.action_type == 'validation' || steps.detect-env-and-set-env-vars.outputs.action_type == 'validation_and_deployment'
+        # if: steps.detect-env-and-set-env-vars.outputs.action_type == 'validation' || steps.detect-env-and-set-env-vars.outputs.action_type == 'validation_and_deployment'
         working-directory: ${{ matrix.updated_tf_dir}}
         run: |
+          echo ${{ steps.detect-env-and-set-env-vars.outputs.action_type }}
+          echo ${{ steps.detect-env-and-set-env-vars.outputs.backend_config_file }}
+          echo ${{ steps.detect-env-and-set-env-vars.outputs.env_specific_param_file }}
           terraform fmt -check
