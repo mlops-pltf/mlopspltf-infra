@@ -134,8 +134,8 @@ jobs:
               target_env = 'prd'
               target_aws_account_id = 284963279238
 
-            f.write(f'target_env="{target_env}"\n')
-            f.write(f'target_aws_account_id="{target_aws_account_id}"\n')
+            f.write(f'target_env={target_env}\n')
+            f.write(f'target_aws_account_id={target_aws_account_id}\n')
             f.write(f'backend_config_file="../backend_configs/{target_env}.config"\n')
             f.write(f'env_specific_param_file="../env_specific_vars/{target_env}.tfvars"')
 
