@@ -126,7 +126,7 @@ jobs:
 
       - name: Terraform Format Check
         id: tf-fmt-check
-        # if: steps.detect-env-and-set-env-vars.outputs.action_type == 'validation' || steps.detect-env-and-set-env-vars.outputs.action_type == 'validation_and_deployment'
+        if: steps.detect-env-and-set-env-vars.outputs.action_type == 'validation_and_deployment'
         working-directory: ${{ matrix.updated_tf_dir}}
         run: |
           echo ${{ steps.detect-env-and-set-env-vars.outputs.action_type }}
