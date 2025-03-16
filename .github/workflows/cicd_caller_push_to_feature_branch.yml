@@ -201,7 +201,7 @@ jobs:
     needs:
       - terraform-tasks
       - expose-terraform-tasks-outputs
-    if: needs.terraform-tasks.outputs.action_type == 'validation_and_deployment'
+    if: ${{ contains(needs.terraform-tasks.outputs.action_type, 'validation_and_deployment') }}
     uses: ./.github/workflows/approval.yml
 
   terraform-apply:
