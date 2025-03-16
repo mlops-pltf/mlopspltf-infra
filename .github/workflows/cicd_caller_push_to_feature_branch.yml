@@ -21,6 +21,21 @@ jobs:
         # with:
           # since_last_remote_commit: true
 
+      - name: Prevent Changes in Remote Backend Config Files
+        id: prevent-changes-remote-backend-configs
+        env:
+          ALL_CHANGED_FILES: ${{ steps.get-all-changed-files.outputs.all_changed_files }}
+        shell: python
+        run: |
+          import os
+          import sys
+          changed_file = os.environ['ALL_CHANGED_FILES']
+          print(f"Updated/Added files: {changed_file}")
+          for file in changed_file.split(' '):
+            if file.startswith('backend_configs'):
+              print(f"Changes in backend_configs are not allowed. Please reach out to Administrator.")
+              sys.exit(1)
+
       - name: List Updated Terraform Directories
         id: list-updated-tf-dirs
         env:
