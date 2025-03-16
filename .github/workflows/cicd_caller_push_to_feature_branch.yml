@@ -44,7 +44,7 @@ jobs:
             print('This commit does not contain any Terraform related changes. We will not move further.')
             with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
               f.write(f"updated_tf_dirs=dummy_value")
-            raise Exception('No terraform changes are found')
+            # raise Exception('No terraform changes are found')
             sys.exit(1)
           else:
             print(f'Updated Terraform paths: {paths_to_be_used}')
