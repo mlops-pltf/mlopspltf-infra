@@ -123,12 +123,19 @@ jobs:
           
             if target_branch_name.startswith('feature/'):
               target_env = 'dev'
+              target_aws_account_id = 284963279238
             elif target_branch_name == 'develop':
               target_env = 'tst'
+              target_aws_account_id = 284963279238
             elif target_branch_name == 'main':
               target_env = 'prd'
+              target_aws_account_id = 284963279238
+
+            f.write(f'target_env="{target_env}"\n')
+            f.write(f'target_aws_account_id="{target_aws_account_id}"\n')
             f.write(f'backend_config_file="../backend_configs/{target_env}.config"\n')
             f.write(f'env_specific_param_file="../env_specific_vars/{target_env}.tfvars"')
+
           print(f"Target Enrironment: {target_env}.")
           print(f"Action Type: {action_type}.")
         shell: python
@@ -139,6 +146,13 @@ jobs:
         working-directory: ${{ matrix.updated_tf_dir}}
         run: |
           terraform fmt -check
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          audience: sts.amazonaws.com
+          aws-region: us-east-1
+          role-to-assume: "arn:aws:iam::${{ steps.detect-env-and-set-env-vars.outputs.target_aws_account_id }}:role/mlopspltf-${{ steps.detect-env-and-set-env-vars.outputs.target_env }}-iam-github-role"
 
       - name: Terraform Init
         id: tf-init
