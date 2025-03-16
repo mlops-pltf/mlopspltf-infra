@@ -35,7 +35,7 @@ jobs:
               if file not in paths_to_be_used:
                 paths_to_be_used.append(
                   '/'.join(
-                    file.split('/')[-1]
+                    file.split('/')[:-1]
                   )
                 )
           print(paths_to_be_used)
