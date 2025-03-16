@@ -41,7 +41,7 @@ jobs:
                   )
                 )
           if len(paths_to_be_used) == 0:
-            print('This commit doesn't contain any Terraform related changes. We will not move further.')
+            print('This commit does not contain any Terraform related changes. We will not move further.')
             sys.exit(0)
           else:
             print(f'Updated Terraform paths: {paths_to_be_used}')
