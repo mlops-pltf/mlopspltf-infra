@@ -32,7 +32,7 @@ jobs:
           paths_to_be_used = list()
           for file in changed_file.split(' '):
             if file.endswith('.tf'):
-              if file not in paths_to_be_used
+              if file not in paths_to_be_used:
                 paths_to_be_used.append(
                   '/'.join(
                     file.split('/')[-1]
