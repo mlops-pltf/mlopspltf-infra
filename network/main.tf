@@ -6,7 +6,7 @@ terraform {
 #   #############################################################
   backend "s3" {
     bucket         = ""
-    key            = "mlopspltf_infra/tf_remote_backend/terraform.tfstate"
+    key            = "mlopspltf_infra/network/terraform.tfstate"
     region         = "us-east-1"
     dynamodb_table = ""
     encrypt        = true
