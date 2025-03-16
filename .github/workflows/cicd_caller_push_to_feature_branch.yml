@@ -33,7 +33,7 @@ jobs:
           print(f"Updated/Added files: {changed_file}")
           for file in changed_file.split(' '):
             if file.startswith('backend_configs'):
-              print(f"Changes in backend_configs are not allowed. Please reach out to Administrator.")
+              print(f"Changes in backend_configs are not allowed. Please reach out to Administrator (Saumalya Sarkar).")
               sys.exit(1)
 
       - name: List Updated Terraform Directories
