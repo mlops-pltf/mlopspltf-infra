@@ -52,15 +52,17 @@ jobs:
               f.write(f"updated_tf_dirs={paths_to_be_used}")
         continue-on-error: true
     outputs:
-      status: ${{ steps.list-updated-tf-dirs.conclusion }}
+      list_updated_tf_dirs_status: ${{ steps.list-updated-tf-dirs.conclusion }}
       updated_tf_dirs: ${{ steps.list-updated-tf-dirs.outputs.updated_tf_dirs }}
   terraform-required-check:
     needs: changed-files
-    if: needs.changed-files.outputs.status == 'success'
+    if: needs.changed-files.outputs.list_updated_tf_dirs_status == 'success'
     runs-on: ubuntu-latest
     steps:
       - name: Extracted Terraform Directories
-        run: echo ${{ needs.changed-files.outputs.updated_tf_dirs }}
+        run: |
+          echo ${{ needs.changed-files.outputs.list_updated_tf_dirs_status }}
+          echo ${{ needs.changed-files.outputs.updated_tf_dirs }}
   terraform-tasks:
     needs:
       - terraform-required-check
