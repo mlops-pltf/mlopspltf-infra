@@ -182,9 +182,25 @@ jobs:
       backend_config_file: ${{ steps.detect-env-and-set-env-vars.outputs.backend_config_file }}
       env_specific_param_file: ${{ steps.detect-env-and-set-env-vars.outputs.env_specific_param_file }}
 
+  expose-terraform-tasks-outputs:
+    name: Expose the outputs from Terraform-Tasks job
+    runs-on: ubuntu-latest
+    needs:
+      - terraform-tasks
+    steps:
+      - name: Show Outputs
+        run: |
+          echo ${{ needs.terraform-tasks.outputs.action_type }}
+          echo ${{ needs.terraform-tasks.outputs.target_env }}
+          echo ${{ needs.terraform-tasks.outputs.target_account_id }}
+          echo ${{ needs.terraform-tasks.outputs.sts_role_to_assume }}
+          echo ${{ needs.terraform-tasks.outputs.backend_config_file }}
+          echo ${{ needs.terraform-tasks.outputs.env_specific_param_file }}
+
   manual-approval-before-deployment:
     needs:
       - terraform-tasks
+      - expose-terraform-tasks-outputs
     if: needs.terraform-tasks.outputs.action_type == 'validation_and_deployment'
     uses: ./.github/workflows/approval.yml
 
