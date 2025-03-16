@@ -54,11 +54,15 @@ jobs:
   check:
     needs: changed-files
     runs-on: ubuntu-latest
-    strategy:
-        matrix:
-            updated_tf_dir: ${{ fromJson(needs.changed-files.outputs['output-matrix'].matrix) }}
+    # strategy:
+    #     matrix:
+    #         updated_tf_dir: ${{ fromJson(needs.changed-files.outputs['output-matrix'].matrix) }}
     steps:
       - uses: actions/checkout@v2
-      - run: |
-          echo "Found Update terrafomr directory - ${{ matrix.updated_tf_dir }}"
-          ls ${{ matrix.updated_tf_dir }}
+
+      - name: Terraform Format Check
+        id: tf-fmt-check
+        run: |
+          echo ${GITHUB_OUTPUT}
+          # echo "Found Update terrafomr directory - ${{ matrix.updated_tf_dir }}"
+          # ls ${{ matrix.updated_tf_dir }}
