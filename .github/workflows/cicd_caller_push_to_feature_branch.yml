@@ -55,7 +55,7 @@ jobs:
   terraform-required-check:
     needs: changed-files
     if: needs.changed-files.outputs.status == 'success'
-    runs-on: ubuntu-latest
+    uses: ./.github/workflows/approval.yml
   terraform-tasks:
     needs:
       - terraform-required-check
