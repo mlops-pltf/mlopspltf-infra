@@ -102,14 +102,29 @@ jobs:
         id: detect-env-and-set-env-vars
         run: |
           import os
-          print(os.environ)
+          github_event_name = os.environ['GITHUB_EVENT_NAME']
+          target_branch_name = os.environ['GITHUB_REF_NAME']
+
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
+            if github_event_name == 'pull_request':
+              action_type = 'validation'
+            elif github_event_name == 'push':
+              action_type = 'validation_and_deployment'
+            f.write(f'action_type="{action_type}"\n')
+          
+            if target_brach_name.startswith('feature/'):
+              target_env = 'dev'
+            elif target_brach_name = 'develop':
+              target_env = 'tst'
+            elif target_brach_name = 'main':
+              target_env = 'prd'
+            f.write(f'backend_config_file="../backend_configs/{target_env}.config"\n')
+            f.write(f'env_specific_param_file="../env_specific_vars/{target_env}.tfvars"')
         shell: python
 
       - name: Terraform Format Check
         id: tf-fmt-check
+        if: steps.detect-env-and-set-env-vars.outputs.action_type == 'validation' || steps.detect-env-and-set-env-vars.outputs.action_type == 'validation_and_deployment'
         working-directory: ${{ matrix.updated_tf_dir}}
         run: |
-          echo "${{ github.ref }}"
-          echo "${{ github.event_name }}"
-          echo "${{ github.event }}"
           terraform fmt -check
