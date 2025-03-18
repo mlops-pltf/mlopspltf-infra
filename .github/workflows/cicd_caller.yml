@@ -51,7 +51,7 @@ jobs:
           print(changed_file)
           paths_to_be_used = list()
           for file in changed_file.split(' '):
-            if file.endswith('.tf'):
+            if file.endswith('.tf') or file.endswith('.tfvars'):
               if file not in paths_to_be_used:
                 paths_to_be_used.append(
                   '/'.join(
