@@ -58,6 +58,10 @@ jobs:
                     file.split('/')[:-1]
                   )
                 )
+          paths_to_be_used = list(set(paths_to_be_used))
+          print(f'Terraform paths: {paths_to_be_used}')
+          if 'env_specific_vars' in paths_to_be_used:
+            paths_to_be_used.remove('env_specific_vars')
           if len(paths_to_be_used) == 0:
             print('This commit does not contain any Terraform related changes. We will not move further.')
             with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
@@ -127,6 +131,7 @@ jobs:
               target_env = 'tst'
             elif target_branch_name == 'main':
               target_env = 'prd'
+            target_aws_account_secret_var_name = f'MLOPS_PLTF_AWS_{target_env.upper()}_ACCOUNT_ID'
             
             if github_event_name == 'pull_request':
               action_type = 'validation'
@@ -179,6 +184,7 @@ jobs:
       backend_config_file: ${{ steps.detect-env-and-set-env-vars.outputs.backend_config_file }}
       env_specific_param_file: ${{ steps.detect-env-and-set-env-vars.outputs.env_specific_param_file }}
       sts_role_arn_secret_var_name: ${{ steps.detect-env-and-set-env-vars.outputs.sts_role_arn_secret_var_name }}
+      target_aws_account_secret_var_name: ${{ steps.detect-env-and-set-env-vars.outputs.target_aws_account_secret_var_name }}
 
   expose-terraform-tasks-outputs:
     name: Expose the outputs from Terraform-Tasks job
@@ -193,6 +199,7 @@ jobs:
           echo ${{ needs.terraform-tasks.outputs.backend_config_file }}
           echo ${{ needs.terraform-tasks.outputs.env_specific_param_file }}
           echo ${{ needs.terraform-tasks.outputs.sts_role_arn_secret_var_name }}
+          echo ${{ needs.terraform-tasks.outputs.target_aws_account_secret_var_name }}
 
   manual-approval-before-deployment:
     needs:
