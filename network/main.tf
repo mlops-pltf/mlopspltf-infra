@@ -25,14 +25,14 @@ provider "aws" {
   allowed_account_ids = ["${var.allowed_account_id}"]
 }
 
-resource "aws_vpc" "main" {
-  cidr_block       = var.environment == "tst" ? "20.0.0.0/16" : "10.0.0.0/16"
-  instance_tenancy = "default"
+# resource "aws_vpc" "main" {
+#   cidr_block       = var.environment == "tst" ? "20.0.0.0/16" : "10.0.0.0/16"
+#   instance_tenancy = "default"
 
-  tags = {
-    Name        = "mlopspltf-${var.environment}-vpc"
-    project     = "MLOPSPLTF"
-    environment = "${var.environment}"
-    jira-ticket = "MLAIHO-31"
-  }
-}
+#   tags = {
+#     Name        = "mlopspltf-${var.environment}-vpc"
+#     project     = "MLOPSPLTF"
+#     environment = "${var.environment}"
+#     jira-ticket = "MLAIHO-31"
+#   }
+# }
