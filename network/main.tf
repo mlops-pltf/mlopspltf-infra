@@ -59,7 +59,7 @@ resource "aws_route_table" "mlopspltf_route_table_with_igw" {
   }
 
   route {
-    ipv6_cidr_block = "0.0.0.0/0"
+    cidr_block = "0.0.0.0/0"
     gateway_id      = aws_internet_gateway.mlopspltf_internet_gateway.id
   }
 
@@ -126,15 +126,6 @@ resource "aws_security_group_rule" "egress_sg_rule_allow_all_traffic_ipv4" {
   type              = "egress"
   security_group_id = aws_security_group.mloppltf_ollama_node_security_group.id
   cidr_blocks       = ["0.0.0.0/0"]
-  protocol          = "-1" # semantically equivalent to all ports
-  from_port         = 0
-  to_port           = 0
-}
-
-resource "aws_security_group_rule" "egress_sg_rule_allow_all_traffic_ipv6" {
-  type              = "egress"
-  security_group_id = aws_security_group.mloppltf_ollama_node_security_group.id
-  cidr_blocks       = ["::/0"]
   protocol          = "-1" # semantically equivalent to all ports
   from_port         = 0
   to_port           = 0
