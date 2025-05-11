@@ -104,19 +104,19 @@ resource "aws_security_group" "mloppltf_ollama_node_security_group" {
   }
 }
 
-resource "aws_vpc_security_group_ingress_rule" "backdoor_to_my_mac" {
+resource "aws_vpc_security_group_ingress_rule" "allow_all_traffic_originated_from_my_mac" {
   security_group_id = aws_security_group.mloppltf_ollama_node_security_group.id
-  cidr_ipv4         = "106.212.85.7/32"
+  cidr_ipv4         = var.my_mac_cidr
   ip_protocol       = "-1"
 }
 
-resource "aws_vpc_security_group_ingress_rule" "allow_all_traffic_originated_within_vpc" {
+resource "aws_vpc_security_group_ingress_rule" "allow_all_ipv4_traffic_originated_within_vpc" {
   security_group_id = aws_security_group.mloppltf_ollama_node_security_group.id
   cidr_ipv6         = aws_vpc.main.cidr_block
   ip_protocol       = "-1"
 }
 
-resource "aws_vpc_security_group_ingress_rule" "allow_all_traffic_originated_within_vpc" {
+resource "aws_vpc_security_group_ingress_rule" "allow_all_ipv6_traffic_originated_within_vpc" {
   security_group_id = aws_security_group.mloppltf_ollama_node_security_group.id
   cidr_ipv6         = aws_vpc.main.ipv6_cidr_block
   ip_protocol       = "-1"
