@@ -24,6 +24,7 @@ provider "aws" {
   region = "us-east-1"
 }
 
+
 resource "aws_vpc" "main" {
   cidr_block       = var.environment == "tst" ? "20.0.0.0/16" : "10.0.0.0/16"
   instance_tenancy = "default"
@@ -34,4 +35,57 @@ resource "aws_vpc" "main" {
     environment = "${var.environment}"
     jira-ticket = "MLAIHO-31"
   }
+}
+
+
+resource "aws_internet_gateway" "mlopspltf_internet_gateway" {
+  vpc_id = aws_vpc.main.id
+
+  tags = {
+    Name = "mlopspltf-${var.environment}-igw"
+    project     = "MLOPSPLTF"
+    environment = "${var.environment}"
+    jira-ticket = "MLAIHO-57"
+  }
+}
+
+
+resource "aws_route_table" "mlopspltf_route_table_with_igw" {
+  vpc_id = aws_vpc.main.id
+
+  route {
+    cidr_block = aws_vpc.main.cidr_block
+    gateway_id = "local"
+  }
+
+  route {
+    ipv6_cidr_block = "0.0.0.0/0"
+    gateway_id = aws_internet_gateway.mlopspltf_internet_gateway.id
+  }
+
+  tags = {
+    Name        = "mlopspltf-${var.environment}-rt-with-igw"
+    project     = "MLOPSPLTF"
+    environment = "${var.environment}"
+    jira-ticket = "MLAIHO-57"
+  }
+}
+
+
+resource "aws_subnet" "mlopspltf_public_subnet_1" {
+  vpc_id     = aws_vpc.main.id
+  cidr_block       = var.environment == "tst" ? "20.0.0.0/26" : "10.0.0.0/26"
+
+  tags = {
+    Name        = "mlopspltf-${var.environment}-public-subnet-1"
+    project     = "MLOPSPLTF"
+    environment = "${var.environment}"
+    jira-ticket = "MLAIHO-57"
+  }
+}
+
+
+resource "aws_route_table_association" "mlopspltf_public_subnet_1_rt_associaton" {
+  subnet_id      = aws_subnet.mlopspltf_public_subnet_1.id
+  route_table_id = aws_route_table.mlopspltf_route_table_with_igw.id
 }
