@@ -42,7 +42,7 @@ resource "aws_internet_gateway" "mlopspltf_internet_gateway" {
   vpc_id = aws_vpc.main.id
 
   tags = {
-    Name = "mlopspltf-${var.environment}-igw"
+    Name        = "mlopspltf-${var.environment}-igw"
     project     = "MLOPSPLTF"
     environment = "${var.environment}"
     jira-ticket = "MLAIHO-57"
@@ -60,7 +60,7 @@ resource "aws_route_table" "mlopspltf_route_table_with_igw" {
 
   route {
     ipv6_cidr_block = "0.0.0.0/0"
-    gateway_id = aws_internet_gateway.mlopspltf_internet_gateway.id
+    gateway_id      = aws_internet_gateway.mlopspltf_internet_gateway.id
   }
 
   tags = {
@@ -74,7 +74,7 @@ resource "aws_route_table" "mlopspltf_route_table_with_igw" {
 
 resource "aws_subnet" "mlopspltf_public_subnet_1" {
   vpc_id     = aws_vpc.main.id
-  cidr_block       = var.environment == "tst" ? "20.0.0.0/26" : "10.0.0.0/26"
+  cidr_block = var.environment == "tst" ? "20.0.0.0/26" : "10.0.0.0/26"
 
   tags = {
     Name        = "mlopspltf-${var.environment}-public-subnet-1"
