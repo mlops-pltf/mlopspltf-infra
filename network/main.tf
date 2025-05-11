@@ -104,32 +104,47 @@ resource "aws_security_group" "mloppltf_ollama_node_security_group" {
   }
 }
 
-resource "aws_vpc_security_group_ingress_rule" "allow_all_traffic_originated_from_my_mac" {
+resource "aws_security_group_rule" "ingress_sg_rule_allow_all_traffic_originated_from_my_mac" {
+  type              = "ingress"
   security_group_id = aws_security_group.mloppltf_ollama_node_security_group.id
-  cidr_ipv4         = var.my_mac_cidr
-  ip_protocol       = "-1"
+  cidr_blocks       = [var.my_mac_cidr]
+  protocol          = "-1"
+  from_port         = 0
+  to_port           = 0
 }
 
-resource "aws_vpc_security_group_ingress_rule" "allow_all_ipv4_traffic_originated_within_vpc" {
+resource "aws_security_group_rule" "ingress_sg_rule_allow_all_ipv4_traffic_originated_within_vpc" {
+  type              = "ingress"
   security_group_id = aws_security_group.mloppltf_ollama_node_security_group.id
-  cidr_ipv6         = aws_vpc.main.cidr_block
-  ip_protocol       = "-1"
+  cidr_blocks       = [aws_vpc.main.cidr_block]
+  protocol          = "-1"
+  from_port         = 0
+  to_port           = 0
 }
 
-resource "aws_vpc_security_group_ingress_rule" "allow_all_ipv6_traffic_originated_within_vpc" {
+resource "aws_security_group_rule" "ingress_sg_rule_allow_all_ipv6_traffic_originated_within_vpc" {
+  type              = "ingress"
   security_group_id = aws_security_group.mloppltf_ollama_node_security_group.id
-  cidr_ipv6         = aws_vpc.main.ipv6_cidr_block
-  ip_protocol       = "-1"
+  cidr_blocks       = [aws_vpc.main.ipv6_cidr_block]
+  protocol          = "-1"
+  from_port         = 0
+  to_port           = 0
 }
 
-resource "aws_vpc_security_group_egress_rule" "allow_all_traffic_ipv4" {
+resource "aws_security_group_rule" "egress_sg_rule_allow_all_traffic_ipv4" {
+  type              = "egress"
   security_group_id = aws_security_group.mloppltf_ollama_node_security_group.id
-  cidr_ipv4         = "0.0.0.0/0"
-  ip_protocol       = "-1" # semantically equivalent to all ports
+  cidr_blocks       = "0.0.0.0/0"
+  protocol          = "-1" # semantically equivalent to all ports
+  from_port         = 0
+  to_port           = 0
 }
 
-resource "aws_vpc_security_group_egress_rule" "allow_all_traffic_ipv6" {
+resource "aws_security_group_rule" "egress_sg_rule_allow_all_traffic_ipv6" {
+  type              = "egress"
   security_group_id = aws_security_group.mloppltf_ollama_node_security_group.id
-  cidr_ipv6         = "::/0"
-  ip_protocol       = "-1" # semantically equivalent to all ports
+  cidr_blocks       = "::/0"
+  protocol          = "-1" # semantically equivalent to all ports
+  from_port         = 0
+  to_port           = 0
 }
