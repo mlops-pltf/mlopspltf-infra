@@ -122,15 +122,6 @@ resource "aws_security_group_rule" "ingress_sg_rule_allow_all_ipv4_traffic_origi
   to_port           = 0
 }
 
-resource "aws_security_group_rule" "ingress_sg_rule_allow_all_ipv6_traffic_originated_within_vpc" {
-  type              = "ingress"
-  security_group_id = aws_security_group.mloppltf_ollama_node_security_group.id
-  cidr_blocks       = [aws_vpc.main.ipv6_cidr_block]
-  protocol          = "-1"
-  from_port         = 0
-  to_port           = 0
-}
-
 resource "aws_security_group_rule" "egress_sg_rule_allow_all_traffic_ipv4" {
   type              = "egress"
   security_group_id = aws_security_group.mloppltf_ollama_node_security_group.id
