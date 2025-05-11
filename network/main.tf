@@ -60,7 +60,7 @@ resource "aws_route_table" "mlopspltf_route_table_with_igw" {
 
   route {
     cidr_block = "0.0.0.0/0"
-    gateway_id      = aws_internet_gateway.mlopspltf_internet_gateway.id
+    gateway_id = aws_internet_gateway.mlopspltf_internet_gateway.id
   }
 
   tags = {
